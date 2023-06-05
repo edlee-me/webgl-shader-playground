@@ -1,35 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { lazy, Suspense } from "react";
+import { List, Scene } from "./components";
+import data from "./data";
+import "./App.scss";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const firstExampleId = data[0].id;
+  const [activeExampleId, setActiveExampleId] =
+    useState<number>(firstExampleId);
+
+  const activeExampleName = data.find(
+    (example) => example.id === activeExampleId
+  )?.name;
+
+  const ActiveExample = activeExampleName
+    ? lazy(
+        () =>
+          import(
+            `./examples/${activeExampleName.toLowerCase()}/${activeExampleName}`
+          )
+      )
+    : null;
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="column left">
+        <h1>WebGL Shader Playground</h1>
+        <List
+          onItemClick={setActiveExampleId}
+          data={data}
+          activeId={activeExampleId}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="column right">
+        <Scene>
+          <Suspense>{ActiveExample && <ActiveExample />}</Suspense>
+        </Scene>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
